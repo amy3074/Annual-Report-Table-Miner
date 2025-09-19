@@ -42,31 +42,3 @@ python -m cli input_pdfs/ --company "SAIL" --keywords "Saleable steel, EBITDA, C
 ```
 
 
-### Repo Structure
-```
-annual-report-table-miner/
-app.py # Streamlit web UI
-cli.py # Simple CLI wrapper
-extractor.py # pdf→raw tables
-cleaner.py # header fix, type/unit cleanup
-normalizer.py # map → tidy schema
-validators.py # sanity checks & audit log
-utils.py # helpers (units, fuzzy match, io)
-config/
-keywords.yml # default keyword sets per domain/company
-templates.yml # optional per-company header->schema maps
-data_samples/ # put sample PDFs here (not included)
-outputs/ # CSV/Excel/audit logs written here
-tests/
-test_units.py
-test_headers.py
-requirements.txt
-
-
-### How it works (pipeline)
-1. **Scan**: search each page for any keyword hit → candidate pages.
-2. **Extract**: use `pdfplumber` to pull tables; if none found, try `camelot` (lattice/stream).
-3. **Clean**: merge multi‑row headers; drop empty cols/rows; coerce dtypes; normalize units.
-4. **Normalize**: reshape to tidy rows and standard column names.
-5. **Validate**: compute audit checks; flag issues with row references.
-6. **Export**: CSV, Excel; JSON audit report; preview in Streamlit.
