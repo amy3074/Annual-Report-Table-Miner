@@ -1,0 +1,40 @@
+import streamlit as st
+
+
+st.set_page_config(page_title='Annual-Report Table Miner', layout='wide')
+st.title('Annual-Report Table Miner')
+
+
+company = st.text_input('Company name', 'SAIL')
+keywords = st.text_input('Keywords (comma separated)', 'Saleable steel, EBITDA, Capex, Production, Capital expenditure')
+files = st.file_uploader('Upload PDF(s)', type=['pdf'], accept_multiple_files=True)
+
+
+if files:
+all_tidy = []
+for f in files:
+tmp_path = Path(f.name)
+tmp_path.write_bytes(f.read())
+with st.spinner(f'Processing {f.name}...'):
+pages = find_candidate_pages(str(tmp_path), [k.strip() for k in keywords.split(',')])
+raw = extract_tables(str(tmp_path), pages)
+st.caption(f"Candidate pages for **{f.name}**: {pages}")
+for t in raw:
+df = clean_table(t['table'])
+if df.empty:
+continue
+st.subheader(f"Preview — {f.name} — page {t['page']+1}")
+st.dataframe(df.head(20))
+tidy = to_tidy(df, company=company, source_file=f.name)
+if not tidy.empty:
+all_tidy.append(tidy)
+tmp_path.unlink(missing_ok=True)
+if all_tidy:
+final = pd.concat(all_tidy, ignore_index=True)
+st.success(f"Extracted {len(final)} rows")
+st.dataframe(final.head(100))
+st.download_button('Download CSV', data=final.to_csv(index=False).encode('utf-8'), file_name='clean_tables.csv')
+with pd.ExcelWriter('clean_tables.xlsx', engine='openpyxl') as writer:
+final.to_excel(writer, index=False)
+with open('clean_tables.xlsx', 'rb') as fh:
+st.download_button('Download Excel', data=fh.read(), file_name='clean_tables.xlsx')
