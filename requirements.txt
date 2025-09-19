@@ -1,0 +1,10 @@
+pdfplumber==0.11.2
+pandas==2.2.2
+openpyxl==3.1.5
+regex==2024.5.15
+streamlit==1.36.0
+PyYAML==6.0.2
+# Optional fallbacks / extras
+camelot-py==0.11.0
+pydantic==2.8.2
+pytest==8.1.0
